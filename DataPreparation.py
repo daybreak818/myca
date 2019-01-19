@@ -11,11 +11,13 @@ def get_imp_data(filepath, user_id, valid_user_list, num_samples_imp):
     #从其他人而非候选人中选择三个骗子的样本
     #possible_imp_set应该是从所有用户列表中去除掉真实的候选者用户，其代表的是三个骗子样本可以进行选择的人员列表
     possible_imp_set = set(valid_user_list) - set([user_id])
-    print(possible_imp_set)
+    #possible_imp_set = set([user_id])
+    #print(possible_imp_set)
     # print('valid_user_list',valid_user_list)
     # print('possible_imp_set',possible_imp_set)
 
     count_imp=-1
+
     for imp in possible_imp_set:
         current_imp = 'User' + str(imp)
        #构建其他人员的训练数据和测试数据
@@ -28,8 +30,9 @@ def get_imp_data(filepath, user_id, valid_user_list, num_samples_imp):
         ts_data = np.loadtxt(ts_file, delimiter=',')
         # slicing the imp data to avoid the class imbalance
         #对数据进行切片，为了避免类不平衡
-        tr_data = tr_data[1:num_samples_imp, :]
-        ts_data = ts_data[1:num_samples_imp, :]
+#       tr_data = tr_data[1:num_samples_imp, :]
+#        ts_data = ts_data[1:num_samples_imp, :]
+        #print(type(tr_data))
         count_imp = count_imp + 1 # I had forgotten this
         #代表仅循环了一次，不需要切片
         if count_imp == 0:

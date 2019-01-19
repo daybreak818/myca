@@ -143,7 +143,8 @@ class Proposed:
         tn, fp, fn, tp = confusion_matrix(act_ts_labels, pred_ts_labels).ravel()
         far = fp / (fp + tn)
         frr = fn / (fn + tp)
-        return far, frr
+        pr = tp / (tp + fp)
+        return far, frr, pr
 
     def iforest(self):
         # Make sure you apply pca before using Envelop -- it is very sensitive to the feature dimensions
@@ -161,7 +162,8 @@ class Proposed:
         tn, fp, fn, tp = confusion_matrix(act_ts_labels, pred_ts_labels).ravel()
         far = fp / (fp + tn)
         frr = fn / (fn + tp)
-        return far, frr
+        pr = tp / (tp + fp)
+        return far, frr, pr
 
     def lof(self):
         clf_lof = LocalOutlierFactor(n_neighbors=35, metric='l2', contamination=0.25)
@@ -173,7 +175,8 @@ class Proposed:
         tn, fp, fn, tp = confusion_matrix(act_ts_labels, pred_ts_labels).ravel()
         far = fp / (fp + tn)
         frr = fn / (fn + tp)
-        return far, frr
+        pr = tp / (tp + fp)
+        return far, frr, pr
 
     def svm1c(self):
         # Make sure you apply pca before using Envelop -- it is very sensitive to the feature dimensions
@@ -192,7 +195,8 @@ class Proposed:
         tn, fp, fn, tp = confusion_matrix(act_ts_labels, pred_ts_labels).ravel()
         far = fp / (fp + tn)
         frr = fn / (fn + tp)
-        return far, frr
+        pr = tp / (tp + fp)
+        return far, frr, pr
 
     def mymm_scaler(self,sup_scores):  # Scales supplied list to 0, 1
         minimum = min(sup_scores)
@@ -213,6 +217,7 @@ class Proposed:
             # Fitting the model on reduced dimensionality
             clf_een.fit(self.gen_tr_data)
             # The anomaly score of the input samples. The lower, the more abnormal.
+            #输入样本的异常分数。越低越不正常。
             pred_gen_scores_ee = clf_een.decision_function(self.gen_ts_data)
             pred_imp_scores_ee = clf_een.decision_function(self.imp_ts_data)
             pred_scores_ts_ee = np.concatenate((pred_gen_scores_ee, pred_imp_scores_ee))
@@ -244,6 +249,8 @@ class Proposed:
             X = np.concatenate((self.gen_tr_data, self.gen_ts_data))
             X_all = np.concatenate((X, self.imp_ts_data))
             pred_all_score = clf_lof.fit_predict(X_all)
+            #print('pred_all_score')
+            #print(pred_all_score)
             pred_scores_ts_lof = pred_all_score[range(len(self.gen_tr_data), len(pred_all_score)),]
             norm_scores_lof = self.mymm_scaler(pred_scores_ts_lof)
         else:
@@ -278,5 +285,18 @@ class Proposed:
         tn, fp, fn, tp = confusion_matrix(act_ts_labels, pred_ts_labels).ravel()
         far = fp / (fp + tn)
         frr = fn / (fn + tp)
+        pr = tp / (tp + fp)
         final_score_table = [norm_scores_ee, norm_scores_if, norm_scores_lof, norm_scores_svm, fused_scores, act_ts_labels]
-        return far, frr, final_score_table
+        #ee分数
+        print(norm_scores_ee)
+        #if分数
+        print(norm_scores_if)
+        #lof是0，1标签
+        print(norm_scores_lof)
+        #svm分数
+        print(norm_scores_svm)
+        #混合后也是分数
+        print(fused_scores)
+        #标签
+        print(act_ts_labels)
+        return far, frr, pr, final_score_table
